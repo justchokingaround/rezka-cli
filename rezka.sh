@@ -97,10 +97,11 @@ if [ -n "$tmp_season_id" ]; then
     [ -z "$episode_id" ] && exit 1
 fi
 
-case "$media_type" in
-    series | cartoons) json_data=$(curl -s -X POST "https://${base}/ajax/get_cdn_series/" -A "uwu" --data-raw "id=${data_id}&translator_id=${translator_id}&season=${season_id}&episode=${episode_id}&action=get_stream" --compressed) ;;
-    *) json_data=$(curl -s -X POST "https://${base}/ajax/get_cdn_series/" -A "uwu" --data-raw "id=${data_id}&translator_id=${translator_id}&action=get_movie" --compressed) ;;
-esac
+if [ -n "$episode_id" ]; then
+    json_data=$(curl -s -X POST "https://${base}/ajax/get_cdn_series/" -A "uwu" --data-raw "id=${data_id}&translator_id=${translator_id}&season=${season_id}&episode=${episode_id}&action=get_stream" --compressed)
+else
+    json_data=$(curl -s -X POST "https://${base}/ajax/get_cdn_series/" -A "uwu" --data-raw "id=${data_id}&translator_id=${translator_id}&action=get_movie" --compressed)
+fi
 [ -z "$json_data" ] && exit 1
 
 encrypted_video_link=$(printf "%s" "$json_data" | sed -nE "s@.*\"url\":\"([^\"]*)\".*@\1@p" | sed "s/\\\//g" | cut -c'3-' | sed 's|//_//||g')
